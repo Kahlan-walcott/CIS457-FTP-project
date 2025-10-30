@@ -19,3 +19,28 @@ print(f"Server response {len} bytes: {buffer.decode()}")
 
 ftp_command(command_sock, "USER anonymous")
 ftp_command(command_sock, "QUIT")
+
+
+# Show list of remote files user: dir server: LIST
+def list_out ():
+  pass
+
+# Change current directory on the remote host User: cd Server: CWD
+def move():
+  pass
+
+# Download file xxxxx from the remote host User: get Server: RETR
+def get(file):
+  pass
+
+# Upload file yyyyy to the remote host User: put Server: STOR
+def put(file):
+  pass
+
+# terminate the current FTP session, but keep your program running User: quit or close Server: QUIT
+def end():
+  pass
+
+
+if __name__ == '__main__':
+  commands = input("Enter thing > ")
