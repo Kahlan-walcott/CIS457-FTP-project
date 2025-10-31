@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
-FTP_SERVER = "ftp.cs.brown.edu"
+# FTP_SERVER = "ftp.cs.brown.edu"
+FTP_SERVER = 'test.rebex.net'
 
 buffer = bytearray(512)
 
@@ -15,7 +16,7 @@ def ftp_command(s, cmd):
     print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
-    print(f"{nbytes} bytes: {buff.decode()}\n")
+    print(f"{nbytes} bytes: {buff.decode()}")
     # Test if line starts with 3 digit code
     try:
       three_digit_code = int(buff.decode()[0:3])
@@ -38,5 +39,7 @@ my_ip, my_port = command_sock.getsockname()
 len = command_sock.recv_into(buffer)
 print(f"Server response {len} bytes: {buffer.decode()}")
 
-ftp_command(command_sock, "USER anonymous")
-ftp_command(command_sock, "QUIT")
+# ftp_command(command_sock, "USER anonymous")
+# ftp_command(command_sock, "QUIT")
+ftp_command(command_sock, "USER demo")
+ftp_command(command_sock, "PASS password")
