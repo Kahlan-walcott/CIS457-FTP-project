@@ -42,45 +42,55 @@ my_ip, my_port = command_sock.getsockname()
 # ftp_command(command_sock, "QUIT")
 ftp_command(command_sock, "USER demo")
 ftp_command(command_sock, "PASS password")
+ftp_command(command_sock, 'LIST')
 # ftp_command(command_sock, 'USER ftp')
 # ftp_command(command_sock, 'USER mail@example.com')
 
 # open TCP socket and connect to server
 def open(server):
-  pass
-  # command_sock = socket(AF_INET, SOCK_STREAM)
-  # command_sock.connect((FTP_SERVER, 21))
-  # my_ip, my_port = command_sock.getsockname()
-  # len = command_sock.recv_into(buffer)
-  # print(f"Server response {len} bytes: {buffer.decode()}")
+  command_sock = socket(AF_INET, SOCK_STREAM)
+  command_sock.connect((FTP_SERVER, 21))
+  my_ip, my_port = command_sock.getsockname()
+  len = command_sock.recv_into(buffer)
+  print(f"Server response {len} bytes: {buffer.decode()}")
+  # TODO: prompt user input for username or password when required
+  return command_sock
 
 # enter user id for server
-def user(username):
-  pass
+def user(username, command_sock):
+  ftp_command(command_sock, 'USER ' + username)
 
 # enter password for server
-def password(password):
-  pass
+def password(password, command_sock):
+  ftp_command(command_sock, 'PASS ' + password)
 
 # Show list of remote files user: dir server: LIST
-def list_out ():
-  pass
+def list_out (command_sock):
+  ftp_command(command_sock, 'LIST')
+  # TODO: account for secondary response message
 
 # Change current directory on the remote host User: cd Server: CWD
-def move():
-  pass
+def cd(command_sock, directory):
+  ftp_command(command_sock, 'CWD ' + directory)
 
 # Download file xxxxx from the remote host User: get Server: RETR
-def get(file):
-  pass
+def get(command_sock, file_path_name):
+  ftp_command(command_sock, 'RETR ' + file_path_name)
+  # TODO: account for secondary response message
+
 
 # Upload file yyyyy to the remote host User: put Server: STOR
-def put(file):
-  pass
+def put(command_sock, file_path_name):
+  ftp_command(command_sock, 'STOR ' + file_path_name)
+  # TODO: account for secondary response message
 
 # terminate the current FTP session, but keep your program running User: quit or close Server: QUIT
-def end():
-  pass
+def close(command_sock):
+  ftp_command(command_sock, 'QUIT')
+
+# terminate both FTP session and program
+def close(command_sock):
+  ftp_command(command_sock, 'QUIT')
 
 
 if __name__ == '__main__':
