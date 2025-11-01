@@ -1,6 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 # FTP_SERVER = "ftp.cs.brown.edu"
 FTP_SERVER = 'test.rebex.net'
+# FTP_SERVER = 'ftp.scene.org'
 
 buffer = bytearray(512)
 
@@ -9,10 +10,8 @@ def ftp_command(s, cmd):
   buff = bytearray(512)
   s.sendall((cmd + "\r\n").encode())
   # TODO: Fix this part to parse multiline responses
-  # i is the exit condition (when ### + ' ')
-  i = 1
   # Loop until end of lines
-  while i == 1:
+  while True:
     print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
@@ -24,26 +23,44 @@ def ftp_command(s, cmd):
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
-        i = 0
         print('END LOOP')
+        break
+      else:
+        continue
     # No 3 digit code, continue loop
-    except TypeError:
+    except:
       print('CONTINUE LOOP')
       continue
-  # nbytes = s.recv_into(buff)
-  # print(f"{nbytes} bytes: {buff.decode()}")
   
 command_sock = socket(AF_INET, SOCK_STREAM)
 command_sock.connect((FTP_SERVER, 21))
 my_ip, my_port = command_sock.getsockname()
-len = command_sock.recv_into(buffer)
-print(f"Server response {len} bytes: {buffer.decode()}")
+# len = command_sock.recv_into(buffer)
+# print(f"Server response {len} bytes: {buffer.decode()}")
 
 # ftp_command(command_sock, "USER anonymous")
 # ftp_command(command_sock, "QUIT")
 ftp_command(command_sock, "USER demo")
 ftp_command(command_sock, "PASS password")
+# ftp_command(command_sock, 'USER ftp')
+# ftp_command(command_sock, 'USER mail@example.com')
 
+# open TCP socket and connect to server
+def open(server):
+  pass
+  # command_sock = socket(AF_INET, SOCK_STREAM)
+  # command_sock.connect((FTP_SERVER, 21))
+  # my_ip, my_port = command_sock.getsockname()
+  # len = command_sock.recv_into(buffer)
+  # print(f"Server response {len} bytes: {buffer.decode()}")
+
+# enter user id for server
+def user(username):
+  pass
+
+# enter password for server
+def password(password):
+  pass
 
 # Show list of remote files user: dir server: LIST
 def list_out ():
@@ -67,5 +84,6 @@ def end():
 
 
 if __name__ == '__main__':
-  commands = input("Enter thing > ")
+  pass
+  # commands = input("Enter thing > ")
   
