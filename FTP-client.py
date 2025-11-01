@@ -67,5 +67,8 @@ def end():
 
 
 if __name__ == '__main__':
-  commands = input("Enter thing > ")
+  commands = input("Enter command > ")
+  commands.split()
+  if commands[1] == "put":
+    pass
   
