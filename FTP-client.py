@@ -32,17 +32,20 @@ def ftp_command(s, cmd):
       print('CONTINUE LOOP')
       continue
   
-command_sock = socket(AF_INET, SOCK_STREAM)
-command_sock.connect((FTP_SERVER, 21))
-my_ip, my_port = command_sock.getsockname()
+# command_sock = socket(AF_INET, SOCK_STREAM)
+# command_sock.connect((FTP_SERVER, 21))
+# my_ip, my_port = command_sock.getsockname()
+
 # len = command_sock.recv_into(buffer)
 # print(f"Server response {len} bytes: {buffer.decode()}")
 
 # ftp_command(command_sock, "USER anonymous")
 # ftp_command(command_sock, "QUIT")
-ftp_command(command_sock, "USER demo")
-ftp_command(command_sock, "PASS password")
-ftp_command(command_sock, 'LIST')
+
+# ftp_command(command_sock, "USER demo")
+# ftp_command(command_sock, "PASS password")
+# ftp_command(command_sock, 'LIST')
+
 # ftp_command(command_sock, 'USER ftp')
 # ftp_command(command_sock, 'USER mail@example.com')
 
@@ -65,7 +68,7 @@ def password(password, command_sock):
   ftp_command(command_sock, 'PASS ' + password)
 
 # Show list of remote files user: dir server: LIST
-def list_out (command_sock):
+def list_out(command_sock):
   ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
 
@@ -94,10 +97,24 @@ def close(command_sock):
 
 
 if __name__ == '__main__':
-  commands = input("Enter command > ")
-  inputs = commands.split()
-  print(inputs)
-  if inputs[0] == "put":
-    #put()
-    pass
-  
+  command_sock = socket(AF_INET, SOCK_STREAM)
+  command_sock.connect((FTP_SERVER, 21))
+  my_ip, my_port = command_sock.getsockname()
+  len = command_sock.recv_into(buffer)
+  print(f"Server response {len} bytes: {buffer.decode()}")
+  while True: 
+    commands = input("Enter command > ")
+    inputs = commands.split()
+    print(inputs)
+    if inputs[0] == "USER":
+      user(str(inputs[1]), command_sock)
+
+    if inputs[0] == "PASS":
+      password(str(inputs[1]), command_sock)
+
+    if inputs[0] == "put":
+      put(command_sock, str(inputs[1]))
+    # has an infinite loop at the moment
+    if inputs[0] == "quit" or inputs[0] == "close":
+      close(command_sock)
+      break
