@@ -59,7 +59,7 @@ def user(username, command_sock):
 def password(password, command_sock):
   ftp_command(command_sock, 'PASS ' + password)
 
-# Show list of remote files user: dir server: LIST
+# Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
   ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
@@ -84,7 +84,7 @@ def close(command_sock):
   ftp_command(command_sock, 'QUIT')
 
 # terminate both FTP session and program
-def close(command_sock):
+def quit(command_sock):
   ftp_command(command_sock, 'QUIT')
 
 
@@ -96,9 +96,22 @@ if __name__ == '__main__':
     inputs = commands.split()
     print(inputs)
 
+    if inputs[0] == 'dir' or inputs[0] == 'ls':
+      list_out(command_sock)
+
+    if inputs[0] == 'cd':
+      cd(command_sock, inputs[1])
+
     if inputs[0] == "put":
       put(command_sock, str(inputs[1]))
 
-    if inputs[0] == "quit" or inputs[0] == "close":
-      close(command_sock)
+    if inputs[0] == "get":
+      get(command_sock, inputs[1])
+
+    if inputs[0] == "quit":
+      # close(command_sock)
+      print("Program closing.")
       break
+
+    if inputs[0] == "close":
+      close(command_sock)
