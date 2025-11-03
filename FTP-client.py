@@ -57,6 +57,10 @@ def open(server):
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username or password when required
+  username = input("Enter username > ")
+  user(str(username), command_sock)
+  pas = input("Enter password > ")
+  password(str(pas), command_sock)
   return command_sock
 
 # enter user id for server
@@ -97,24 +101,16 @@ def close(command_sock):
 
 
 if __name__ == '__main__':
-  command_sock = socket(AF_INET, SOCK_STREAM)
-  command_sock.connect((FTP_SERVER, 21))
-  my_ip, my_port = command_sock.getsockname()
-  len = command_sock.recv_into(buffer)
-  print(f"Server response {len} bytes: {buffer.decode()}")
+  server = input("Enter server name > ")
+  command_sock = open(server)
   while True: 
     commands = input("Enter command > ")
     inputs = commands.split()
     print(inputs)
-    if inputs[0] == "USER":
-      user(str(inputs[1]), command_sock)
-
-    if inputs[0] == "PASS":
-      password(str(inputs[1]), command_sock)
 
     if inputs[0] == "put":
       put(command_sock, str(inputs[1]))
-    # has an infinite loop at the moment
+
     if inputs[0] == "quit" or inputs[0] == "close":
       close(command_sock)
       break
