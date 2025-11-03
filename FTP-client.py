@@ -94,5 +94,10 @@ def close(command_sock):
 
 
 if __name__ == '__main__':
-  commands = input("Enter thing > ")
+  commands = input("Enter command > ")
+  inputs = commands.split()
+  print(inputs)
+  if inputs[0] == "put":
+    #put()
+    pass
   
