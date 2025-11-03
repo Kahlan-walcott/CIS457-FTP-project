@@ -1,7 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM
-# FTP_SERVER = "ftp.cs.brown.edu"
-FTP_SERVER = 'test.rebex.net'
-# FTP_SERVER = 'ftp.scene.org'
+# FTP_SERVER = 'test.rebex.net'
 
 buffer = bytearray(512)
 
@@ -31,16 +29,6 @@ def ftp_command(s, cmd):
     except:
       print('CONTINUE LOOP')
       continue
-  
-# command_sock = socket(AF_INET, SOCK_STREAM)
-# command_sock.connect((FTP_SERVER, 21))
-# my_ip, my_port = command_sock.getsockname()
-
-# len = command_sock.recv_into(buffer)
-# print(f"Server response {len} bytes: {buffer.decode()}")
-
-# ftp_command(command_sock, "USER anonymous")
-# ftp_command(command_sock, "QUIT")
 
 # ftp_command(command_sock, "USER demo")
 # ftp_command(command_sock, "PASS password")
@@ -52,7 +40,7 @@ def ftp_command(s, cmd):
 # open TCP socket and connect to server
 def open(server):
   command_sock = socket(AF_INET, SOCK_STREAM)
-  command_sock.connect((FTP_SERVER, 21))
+  command_sock.connect((server, 21))
   my_ip, my_port = command_sock.getsockname()
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
