@@ -24,16 +24,10 @@ def ftp_command(s, cmd):
         # exit loop
         print('END LOOP')
         break
-      # print('CODE', three_digit_code)
-      # if three_digit_code == 221:
-      #   break
       else:
         continue
     # No 3 digit code, continue loop
     except:
-      # if code == 221:
-      #   print("In except block")
-      #   break
       print('CONTINUE LOOP')
       continue
 
@@ -99,6 +93,8 @@ if __name__ == '__main__':
   command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
   server = input("Enter server name > ")
   command_sock = open(server)
+  # To tell if the user typed close before before quit
+  closes = 0
   while True: 
     commands = input("Enter command > ")
     inputs = commands.split()
@@ -121,15 +117,11 @@ if __name__ == '__main__':
       get(command_sock, inputs[1])
 
     if inputs[0] == "quit":
-      # causes an infinite loop (how to find out if the connection has already been severed - no infinite loop) 221
-      # print("The code" ,three_digit_code)
-      # if three_digit_code == 221:
-      quit(command_sock)
+      if closes == 0:
+        quit(command_sock)
       print("Program closing.")
-      # break
-      # if three_digit_code != 221:
-      # quit(command_sock)
       break
 
     if inputs[0] == "close":
+      closes = 1
       close(command_sock)
