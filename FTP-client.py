@@ -2,6 +2,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 # FTP_SERVER = 'test.rebex.net'
 
 buffer = bytearray(512)
+code = int(000)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -23,10 +24,16 @@ def ftp_command(s, cmd):
         # exit loop
         print('END LOOP')
         break
+      # print('CODE', three_digit_code)
+      # if three_digit_code == 221:
+      #   break
       else:
         continue
     # No 3 digit code, continue loop
     except:
+      # if code == 221:
+      #   print("In except block")
+      #   break
       print('CONTINUE LOOP')
       continue
 
@@ -79,22 +86,27 @@ def put(command_sock, file_path_name):
   ftp_command(command_sock, 'STOR ' + file_path_name)
   # TODO: account for secondary response message
 
-# terminate the current FTP session, but keep your program running User: quit or close Server: QUIT
+# terminate the current FTP session, but keep your program running User: close Server: QUIT
 def close(command_sock):
   ftp_command(command_sock, 'QUIT')
 
-# terminate both FTP session and program
+# terminate both FTP session and program User: quit Server: QUIT
 def quit(command_sock):
   ftp_command(command_sock, 'QUIT')
 
 
 if __name__ == '__main__':
+  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
   server = input("Enter server name > ")
   command_sock = open(server)
   while True: 
     commands = input("Enter command > ")
     inputs = commands.split()
     print(inputs)
+
+    if inputs[0] not in command_lst:
+      commands = input("Please enter a valid command > ")
+      inputs = commands.split()
 
     if inputs[0] == 'dir' or inputs[0] == 'ls':
       list_out(command_sock)
@@ -109,8 +121,14 @@ if __name__ == '__main__':
       get(command_sock, inputs[1])
 
     if inputs[0] == "quit":
-      # close(command_sock)
+      # causes an infinite loop (how to find out if the connection has already been severed - no infinite loop) 221
+      # print("The code" ,three_digit_code)
+      # if three_digit_code == 221:
+      quit(command_sock)
       print("Program closing.")
+      # break
+      # if three_digit_code != 221:
+      # quit(command_sock)
       break
 
     if inputs[0] == "close":
