@@ -23,21 +23,11 @@ def ftp_command(s, cmd):
     try:
       three_digit_code = int(buff.decode()[0:3])
       print('THREE DIGIT CODE', three_digit_code)
-      if (three_digit_code) >= 300:
-        print("Can't use that user name")
-      else:
-   # Userid is accepted?
-        pass
-      # DO you need a password to get in?
-      if three_digit_code == 331:
-        # print("Need pass")
-        return three_digit_code
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
         print('END LOOP')
         return three_digit_code
-        
       else:
         continue
     # No 3 digit code, continue loop
@@ -61,7 +51,7 @@ def open(server):
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
   
-  # TODO: prompt user input for username or password when required
+  # TODO: prompt user input for username
   username = input("Enter username > ")
   while ftp_command(command_sock, "USER " + str(username)) >= 300:
     print("Can't use that user name")
@@ -74,16 +64,12 @@ def open(server):
   # else:
   #  # Userid is accepted?
   user(str(username), command_sock)
-  # if int(buffer.decode()[0:3]) == 331:
-  # print(int(buffer.decode()[0:3]))
-  # pas = input("Enter password > ")
-  # password(str(pas), command_sock)
   return command_sock
 
 # enter user id for server
 def user(username, command_sock):
-  code = ftp_command(command_sock, 'USER ' + username)
-  if code == 331:
+  user_check = ftp_command(command_sock, 'USER ' + username)
+  if user_check == 331:
     pas = input("Enter password > ")
     password(str(pas), command_sock)
 
