@@ -23,11 +23,6 @@ def ftp_command(s, cmd):
     try:
       three_digit_code = int(buff.decode()[0:3])
       print('THREE DIGIT CODE', three_digit_code)
-      if (three_digit_code) >= 300:
-        print("Can't use that user name")
-      else:
-   # Userid is accepted?
-        pass
       # DO you need a password to get in?
       if three_digit_code == 331:
         # print("Need pass")
@@ -61,7 +56,7 @@ def open(server):
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username or password when required
   username = input("Enter username > ")
-  while ftp_command(command_sock, "USER " + str(username)) >= 300:
+  while ftp_command(command_sock, "USER " + str(username)) != 331:
     print("Can't use that user name")
     username = input("Enter username > ")
 
@@ -74,8 +69,8 @@ def open(server):
   user(str(username), command_sock)
   # if int(buffer.decode()[0:3]) == 331:
   # print(int(buffer.decode()[0:3]))
-  # pas = input("Enter password > ")
-  # password(str(pas), command_sock)
+  pas = input("Enter password > ")
+  password(str(pas), command_sock)
   return command_sock
 
 # enter user id for server
@@ -93,6 +88,7 @@ def password(password, command_sock):
 def list_out(command_sock):
   ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
+
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
