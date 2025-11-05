@@ -1,4 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
+from threading import Thread
+
 # FTP_SERVER = 'test.rebex.net'
 
 # buffer = bytearray(512)
@@ -9,21 +11,33 @@ def ftp_command(s, cmd):
   buff = bytearray(512)
   s.sendall((cmd + "\r\n").encode())
   # TODO: Fix this part to parse multiline responses
+
   # Loop until end of lines
   while True:
     print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
+    # buff = bytearray(nbytes)
     print(f"{nbytes} bytes: {buff.decode()}")
     # Test if line starts with 3 digit code
     try:
       three_digit_code = int(buff.decode()[0:3])
       print('THREE DIGIT CODE', three_digit_code)
+      if (three_digit_code) >= 300:
+        print("Can't use that user name")
+      else:
+   # Userid is accepted?
+        pass
+      # DO you need a password to get in?
+      if three_digit_code == 331:
+        # print("Need pass")
+        return three_digit_code
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
         print('END LOOP')
-        break
+        return three_digit_code
+        
       else:
         continue
     # No 3 digit code, continue loop
@@ -49,14 +63,29 @@ def open(server):
   
   # TODO: prompt user input for username or password when required
   username = input("Enter username > ")
+  while ftp_command(command_sock, "USER " + str(username)) >= 300:
+    print("Can't use that user name")
+    username = input("Enter username > ")
+
+  # print("out of loop for some reasion.")
+  # if (ftp_command(command_sock, "USER " + username)) >= 300:
+  #   print("Can't use that user name")
+  #   username = input("Enter username > ")
+  # else:
+  #  # Userid is accepted?
   user(str(username), command_sock)
-  pas = input("Enter password > ")
-  password(str(pas), command_sock)
+  # if int(buffer.decode()[0:3]) == 331:
+  # print(int(buffer.decode()[0:3]))
+  # pas = input("Enter password > ")
+  # password(str(pas), command_sock)
   return command_sock
 
 # enter user id for server
 def user(username, command_sock):
-  ftp_command(command_sock, 'USER ' + username)
+  code = ftp_command(command_sock, 'USER ' + username)
+  if code == 331:
+    pas = input("Enter password > ")
+    password(str(pas), command_sock)
 
 # enter password for server
 def password(password, command_sock):
@@ -128,3 +157,5 @@ if __name__ == '__main__':
     if inputs[0] == "close":
       closes = 1
       close(command_sock)
+      server = input("Enter server name > ")
+      command_sock = open(server)
