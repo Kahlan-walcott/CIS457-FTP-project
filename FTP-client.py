@@ -23,7 +23,7 @@ def ftp_command(s, cmd):
       if buff.decode()[4] != '-':
         # exit loop
         print('END LOOP')
-        break
+        return three_digit_code
       else:
         continue
     # No 3 digit code, continue loop
@@ -48,13 +48,14 @@ def open(server):
   # TODO: prompt user input for username or password when required
   username = input("Enter username > ")
   user(str(username), command_sock)
-  pas = input("Enter password > ")
-  password(str(pas), command_sock)
   return command_sock
 
 # enter user id for server
 def user(username, command_sock):
-  ftp_command(command_sock, 'USER ' + username)
+  user_check = ftp_command(command_sock, 'USER ' + username)
+  if user_check == 331:
+    pas = input("Enter password > ")
+    password(str(pas), command_sock)
 
 # enter password for server
 def password(password, command_sock):
