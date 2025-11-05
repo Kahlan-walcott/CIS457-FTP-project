@@ -96,7 +96,8 @@ if __name__ == '__main__':
   first = str(input("Open connection -> "))
   first = first.split(' ')
   print(first)
-  while first[0] != 'open' and len(first) <= 1:
+  while first[0] != 'open' or len(first) <= 1:
+    print(first, len(first))
     print('Error - cannot run command')
     first = input('Open connection -> ')
   command_sock = open(first[1])
