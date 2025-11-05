@@ -52,16 +52,14 @@ def open(server):
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username
   username = input("Enter username > ")
-  while ftp_command(command_sock, "USER " + str(username)) >= 300:
+  close = 0
+  while ftp_command(command_sock, "USER " + str(username)) == 530 or close:
     print("Can't use that user name")
     username = input("Enter username > ")
+    if close:
+      close(command_sock)
 
-  # print("out of loop for some reasion.")
-  # if (ftp_command(command_sock, "USER " + username)) >= 300:
-  #   print("Can't use that user name")
-  #   username = input("Enter username > ")
-  # else:
-  #  # Userid is accepted?
+  
   user(str(username), command_sock)
   return command_sock
 
@@ -111,7 +109,8 @@ if __name__ == '__main__':
   first = str(input("Open connection -> "))
   first = first.split(' ')
   print(first)
-  while first[0] != 'open' and len(first) <= 1:
+  while first[0] != 'open':
+    print(first)
     print('Error - cannot run command')
     first = input('Open connection -> ')
   command_sock = open(first[1])
