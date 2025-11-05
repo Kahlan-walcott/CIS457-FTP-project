@@ -45,7 +45,7 @@ def open(server):
   my_ip, my_port = command_sock.getsockname()
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
-  # TODO: prompt user input for username or password when required
+  # TODO: prompt user input for username
   username = input("Enter username > ")
   user(str(username), command_sock)
   return command_sock
@@ -60,6 +60,7 @@ def user(username, command_sock):
 # enter password for server
 def password(password, command_sock):
   ftp_command(command_sock, 'PASS ' + password)
+  # TODO: loop in case of wrong password (551)
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
@@ -92,8 +93,13 @@ def quit(command_sock):
 
 if __name__ == '__main__':
   command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
-  server = input("Enter server name > ")
-  command_sock = open(server)
+  first = str(input("Open connection -> "))
+  first = first.split(' ')
+  print(first)
+  if first[0] != 'open':
+    print('Error - cannot run command')
+    first = input('Open connection -> ')
+  command_sock = open(first[1])
   # To tell if the user typed close before before quit
   closes = 0
   while True: 
