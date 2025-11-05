@@ -3,8 +3,8 @@ from threading import Thread
 
 # FTP_SERVER = 'test.rebex.net'
 
-buffer = bytearray(512)
-# code = int(000)
+# buffer = bytearray(512)
+code = int(000)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -49,11 +49,13 @@ def ftp_command(s, cmd):
 
 # open TCP socket and connect to server
 def open(server):
+  buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
   my_ip, my_port = command_sock.getsockname()
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
+  
   # TODO: prompt user input for username or password when required
   username = input("Enter username > ")
   while ftp_command(command_sock, "USER " + str(username)) != 331:
@@ -120,6 +122,7 @@ if __name__ == '__main__':
   command_sock = open(server)
   # To tell if the user typed close before before quit
   closes = 0
+  # type open then name of server
   while True: 
     commands = input("Enter command > ")
     inputs = commands.split()
