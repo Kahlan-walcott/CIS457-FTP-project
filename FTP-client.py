@@ -1,7 +1,10 @@
 from socket import socket, AF_INET, SOCK_STREAM
+from threading import Thread
+import sys
+
 # FTP_SERVER = 'test.rebex.net'
 
-buffer = bytearray(512)
+# buffer = bytearray(512)
 code = int(000)
 
 def ftp_command(s, cmd):
@@ -9,11 +12,13 @@ def ftp_command(s, cmd):
   buff = bytearray(512)
   s.sendall((cmd + "\r\n").encode())
   # TODO: Fix this part to parse multiline responses
+
   # Loop until end of lines
   while True:
     print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
+    # buff = bytearray(nbytes)
     print(f"{nbytes} bytes: {buff.decode()}")
     # Test if line starts with 3 digit code
     try:
@@ -40,6 +45,7 @@ def ftp_command(s, cmd):
 
 # open TCP socket and connect to server
 def open(server):
+  buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
   my_ip, my_port = command_sock.getsockname()
@@ -47,6 +53,12 @@ def open(server):
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username
   username = input("Enter username > ")
+  # close = 0
+  # while ftp_command(command_sock, "USER " + str(username)) == 530 or close:
+  #   print("Can't use that user name")
+  #   username = input("Enter username > ")
+  #   if close:
+  #     close(command_sock)
   user(str(username), command_sock)
   return command_sock
 
@@ -57,10 +69,17 @@ def user(username, command_sock):
     pas = input("Enter password > ")
     password(str(pas), command_sock)
 
+
 # enter password for server
 def password(password, command_sock):
-  ftp_command(command_sock, 'PASS ' + password)
-  # TODO: loop in case of wrong password (551)
+  pass_check = ftp_command(command_sock, 'PASS ' + password)
+  # TODO: loop in case of wrong password (530)
+  if pass_check == 530:
+    print("Invalid username or password")
+    username2 = input("Enter username > ")
+    user(username2, command_sock)
+    if username2 == 'close':
+      close(command_sock)
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
@@ -89,10 +108,22 @@ def close(command_sock):
 # terminate both FTP session and program User: quit Server: QUIT
 def quit(command_sock):
   ftp_command(command_sock, 'QUIT')
+  sys.exit(0)
+
+# open new data socket
+def data_socket():
+  # PORT a,b,c,d,48,57
+  # Use the "receptionist" to accept incoming connections
+  data_receptioninst = socket(AF_INET, SOCK_STREAM)
+  data_receptioninst.bind(("0.0.0.0", 12345))
+  data_receptioninst.listen(1)         # max number of pending request
+
+  # Use the "data_socket" to perform the actual byte transfer
+  data_socket = data_receptioninst.accept()
 
 
 if __name__ == '__main__':
-  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
+  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close", "open"]
   first = str(input("Open connection -> "))
   first = first.split(' ')
   print(first)
@@ -103,6 +134,7 @@ if __name__ == '__main__':
   command_sock = open(first[1])
   # To tell if the user typed close before before quit
   closes = 0
+  # type open then name of server
   while True: 
     commands = input("Enter command > ")
     inputs = commands.split()
@@ -133,3 +165,8 @@ if __name__ == '__main__':
     if inputs[0] == "close":
       closes = 1
       close(command_sock)
+      # server = input("Enter server name > ")
+      # command_sock = open(server)
+
+    if inputs[0] == 'open':
+      command_sock = open(first[1])
