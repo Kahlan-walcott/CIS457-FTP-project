@@ -1,10 +1,10 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+import sys
 
 # FTP_SERVER = 'test.rebex.net'
 
 # buffer = bytearray(512)
-# code = int(000)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -37,29 +37,18 @@ def ftp_command(s, cmd):
 
 # ftp_command(command_sock, "USER demo")
 # ftp_command(command_sock, "PASS password")
-# ftp_command(command_sock, 'LIST')
-
-# ftp_command(command_sock, 'USER ftp')
-# ftp_command(command_sock, 'USER mail@example.com')
 
 # open TCP socket and connect to server
 def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
-  my_ip, my_port = command_sock.getsockname()
+  # my_ip, my_port = command_sock.getsockname()
+  # print('MY_IP AND MY_PORT', my_ip, my_port)
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username
   username = input("Enter username > ")
-  close = 0
-  while ftp_command(command_sock, "USER " + str(username)) == 530 or close:
-    print("Can't use that user name")
-    username = input("Enter username > ")
-    if close:
-      close(command_sock)
-
-  
   user(str(username), command_sock)
   return command_sock
 
@@ -70,30 +59,37 @@ def user(username, command_sock):
     pas = input("Enter password > ")
     password(str(pas), command_sock)
 
+
 # enter password for server
 def password(password, command_sock):
-  ftp_command(command_sock, 'PASS ' + password)
-  # TODO: loop in case of wrong password (551)
+  pass_check = ftp_command(command_sock, 'PASS ' + password)
+  # loop in case of wrong username or password (status code 530)
+  if pass_check == 530:
+    print("Invalid username or password")
+    username2 = input("Enter username > ")
+    user(username2, command_sock)
+    if username2 == 'close':
+      close(command_sock)
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
-  ftp_command(command_sock, 'LIST')
+  ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
 
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
-  ftp_command(command_sock, 'CWD ' + directory)
+  ftp_command(command_sock, 'CWD ' + str(directory))
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
-  ftp_command(command_sock, 'RETR ' + file_path_name)
+  get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
   # TODO: account for secondary response message
 
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
-  ftp_command(command_sock, 'STOR ' + file_path_name)
+  put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
   # TODO: account for secondary response message
 
 # terminate the current FTP session, but keep your program running User: close Server: QUIT
@@ -103,15 +99,36 @@ def close(command_sock):
 # terminate both FTP session and program User: quit Server: QUIT
 def quit(command_sock):
   ftp_command(command_sock, 'QUIT')
+  sys.exit(0)
+
+# open new data socket
+def new_data_socket(old_command_sock):
+  my_ip, my_port = old_command_sock.getsockname()
+  my_ip = my_ip.replace('.', ',')
+  # get values for my_port = x * 256 + y
+  # generate random # 1024 - 65535
+  ran_port =
+  x = ran_port//256
+  y = ran_port % 256
+  port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
+  # pasv_comm = ftp_command(command_sock, "Pasv")
+  # Use the "receptionist" to accept incoming connections
+  data_receptioninst = socket(AF_INET, SOCK_STREAM)
+  data_receptioninst.bind(("0.0.0.0", ran_port))
+  data_receptioninst.listen(1)         # max number of pending request
+
+  # Use the "data_socket" to perform the actual byte transfer
+  data_socket = data_receptioninst.accept()
+  return data_socket
 
 
 if __name__ == '__main__':
-  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
+  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close", "open"]
   first = str(input("Open connection -> "))
   first = first.split(' ')
   print(first)
-  while first[0] != 'open':
-    print(first)
+  while first[0] != 'open' or len(first) <= 1:
+    print(first, len(first))
     print('Error - cannot run command')
     first = input('Open connection -> ')
   command_sock = open(first[1])
@@ -148,5 +165,8 @@ if __name__ == '__main__':
     if inputs[0] == "close":
       closes = 1
       close(command_sock)
-      server = input("Enter server name > ")
-      command_sock = open(server)
+      # server = input("Enter server name > ")
+      # command_sock = open(server)
+
+    if inputs[0] == 'open':
+      command_sock = open(first[1])
