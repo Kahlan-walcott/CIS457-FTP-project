@@ -48,7 +48,8 @@ def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
-  my_ip, my_port = command_sock.getsockname()
+  # my_ip, my_port = command_sock.getsockname()
+  # print('MY_IP AND MY_PORT', my_ip, my_port)
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username
@@ -73,7 +74,7 @@ def user(username, command_sock):
 # enter password for server
 def password(password, command_sock):
   pass_check = ftp_command(command_sock, 'PASS ' + password)
-  # TODO: loop in case of wrong password (530)
+  # loop in case of wrong username or password (status code 530)
   if pass_check == 530:
     print("Invalid username or password")
     username2 = input("Enter username > ")
@@ -83,7 +84,7 @@ def password(password, command_sock):
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
-  ftp_command(command_sock, 'LIST')
+  ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
 
 # Change current directory on the remote host User: cd Server: CWD
@@ -92,13 +93,13 @@ def cd(command_sock, directory):
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
-  ftp_command(command_sock, 'RETR ' + file_path_name)
+  get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
   # TODO: account for secondary response message
 
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
-  ftp_command(command_sock, 'STOR ' + file_path_name)
+  put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
   # TODO: account for secondary response message
 
 # terminate the current FTP session, but keep your program running User: close Server: QUIT
@@ -111,8 +112,14 @@ def quit(command_sock):
   sys.exit(0)
 
 # open new data socket
-def data_socket():
-  # PORT a,b,c,d,48,57
+def data_socket(command_sock):
+  my_ip, my_port = command_sock.getsockname()
+  my_ip = my_ip.replace('.', ',')
+  # get values for my_port = x * 256 + y
+  x = my_port//256
+  y = my_port - (256*x)
+  port_check = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
+  # pasv_check = ftp_command(command_sock, "Pasv")
   # Use the "receptionist" to accept incoming connections
   data_receptioninst = socket(AF_INET, SOCK_STREAM)
   data_receptioninst.bind(("0.0.0.0", 12345))
