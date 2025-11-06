@@ -23,14 +23,11 @@ def ftp_command(s, cmd):
     try:
       three_digit_code = int(buff.decode()[0:3])
       print('THREE DIGIT CODE', three_digit_code)
-      # DO you need a password to get in?
-
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
         print('END LOOP')
         return three_digit_code
-        
       else:
         continue
     # No 3 digit code, continue loop
@@ -53,31 +50,22 @@ def open(server):
   my_ip, my_port = command_sock.getsockname()
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
-  
-  # TODO: prompt user input for username or password when required
+  # TODO: prompt user input for username
   username = input("Enter username > ")
-  # while ftp_command(command_sock, "USER " + str(username)) != 331:
-  #   print("Can't use that user name")
-  #   username = input("Enter username > ")
+  close = 0
+  while ftp_command(command_sock, "USER " + str(username)) == 530 or close:
+    print("Can't use that user name")
+    username = input("Enter username > ")
+    if close:
+      close(command_sock)
 
-  # print("out of loop for some reasion.")
-  # if (ftp_command(command_sock, "USER " + username)) >= 300:
-  #   print("Can't use that user name")
-  #   username = input("Enter username > ")
-  # else:
-  #  # Userid is accepted?
+  
   user(str(username), command_sock)
   return command_sock
 
 # enter user id for server
 def user(username, command_sock):
   user_check = ftp_command(command_sock, 'USER ' + username)
-  # error checking: not working (do I need)
-  while user_check >= 300:
-    print("Can't use that user name")
-    if user_check == 331:
-      break
-    username = input("Enter username > ")
   if user_check == 331:
     pas = input("Enter password > ")
     password(str(pas), command_sock)
@@ -85,6 +73,7 @@ def user(username, command_sock):
 # enter password for server
 def password(password, command_sock):
   ftp_command(command_sock, 'PASS ' + password)
+  # TODO: loop in case of wrong password (551)
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
@@ -117,10 +106,15 @@ def quit(command_sock):
 
 
 if __name__ == '__main__':
-  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close", "open"]
-  server = input("Enter server name > ")
-  open_com = server.split()
-  command_sock = open(open_com[1])
+  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
+  first = str(input("Open connection -> "))
+  first = first.split(' ')
+  print(first)
+  while first[0] != 'open':
+    print(first)
+    print('Error - cannot run command')
+    first = input('Open connection -> ')
+  command_sock = open(first[1])
   # To tell if the user typed close before before quit
   closes = 0
   # type open then name of server
