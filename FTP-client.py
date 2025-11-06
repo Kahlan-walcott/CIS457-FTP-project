@@ -5,7 +5,6 @@ import sys
 # FTP_SERVER = 'test.rebex.net'
 
 # buffer = bytearray(512)
-code = int(000)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -38,10 +37,6 @@ def ftp_command(s, cmd):
 
 # ftp_command(command_sock, "USER demo")
 # ftp_command(command_sock, "PASS password")
-# ftp_command(command_sock, 'LIST')
-
-# ftp_command(command_sock, 'USER ftp')
-# ftp_command(command_sock, 'USER mail@example.com')
 
 # open TCP socket and connect to server
 def open(server):
@@ -54,12 +49,6 @@ def open(server):
   print(f"Server response {len} bytes: {buffer.decode()}")
   # TODO: prompt user input for username
   username = input("Enter username > ")
-  # close = 0
-  # while ftp_command(command_sock, "USER " + str(username)) == 530 or close:
-  #   print("Can't use that user name")
-  #   username = input("Enter username > ")
-  #   if close:
-  #     close(command_sock)
   user(str(username), command_sock)
   return command_sock
 
@@ -89,7 +78,7 @@ def list_out(command_sock):
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
-  ftp_command(command_sock, 'CWD ' + directory)
+  ftp_command(command_sock, 'CWD ' + str(directory))
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
@@ -112,21 +101,24 @@ def quit(command_sock):
   sys.exit(0)
 
 # open new data socket
-def data_socket(command_sock):
-  my_ip, my_port = command_sock.getsockname()
+def new_data_socket(old_command_sock):
+  my_ip, my_port = old_command_sock.getsockname()
   my_ip = my_ip.replace('.', ',')
   # get values for my_port = x * 256 + y
-  x = my_port//256
-  y = my_port - (256*x)
-  port_check = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
-  # pasv_check = ftp_command(command_sock, "Pasv")
+  # generate random # 1024 - 65535
+  ran_port =
+  x = ran_port//256
+  y = ran_port % 256
+  port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
+  # pasv_comm = ftp_command(command_sock, "Pasv")
   # Use the "receptionist" to accept incoming connections
   data_receptioninst = socket(AF_INET, SOCK_STREAM)
-  data_receptioninst.bind(("0.0.0.0", 12345))
+  data_receptioninst.bind(("0.0.0.0", ran_port))
   data_receptioninst.listen(1)         # max number of pending request
 
   # Use the "data_socket" to perform the actual byte transfer
   data_socket = data_receptioninst.accept()
+  return data_socket
 
 
 if __name__ == '__main__':
