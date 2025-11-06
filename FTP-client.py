@@ -4,7 +4,7 @@ from threading import Thread
 # FTP_SERVER = 'test.rebex.net'
 
 # buffer = bytearray(512)
-code = int(000)
+# code = int(000)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -24,9 +24,7 @@ def ftp_command(s, cmd):
       three_digit_code = int(buff.decode()[0:3])
       print('THREE DIGIT CODE', three_digit_code)
       # DO you need a password to get in?
-      if three_digit_code == 331:
-        # print("Need pass")
-        return three_digit_code
+
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
@@ -58,9 +56,9 @@ def open(server):
   
   # TODO: prompt user input for username or password when required
   username = input("Enter username > ")
-  while ftp_command(command_sock, "USER " + str(username)) != 331:
-    print("Can't use that user name")
-    username = input("Enter username > ")
+  # while ftp_command(command_sock, "USER " + str(username)) != 331:
+  #   print("Can't use that user name")
+  #   username = input("Enter username > ")
 
   # print("out of loop for some reasion.")
   # if (ftp_command(command_sock, "USER " + username)) >= 300:
@@ -69,16 +67,18 @@ def open(server):
   # else:
   #  # Userid is accepted?
   user(str(username), command_sock)
-  # if int(buffer.decode()[0:3]) == 331:
-  # print(int(buffer.decode()[0:3]))
-  pas = input("Enter password > ")
-  password(str(pas), command_sock)
   return command_sock
 
 # enter user id for server
 def user(username, command_sock):
-  code = ftp_command(command_sock, 'USER ' + username)
-  if code == 331:
+  user_check = ftp_command(command_sock, 'USER ' + username)
+  # error checking: not working (do I need)
+  while user_check >= 300:
+    print("Can't use that user name")
+    if user_check == 331:
+      break
+    username = input("Enter username > ")
+  if user_check == 331:
     pas = input("Enter password > ")
     password(str(pas), command_sock)
 
@@ -117,9 +117,10 @@ def quit(command_sock):
 
 
 if __name__ == '__main__':
-  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close"]
+  command_lst = ['dir', 'ls', 'cd', "put", "get", "quit", "close", "open"]
   server = input("Enter server name > ")
-  command_sock = open(server)
+  open_com = server.split()
+  command_sock = open(open_com[1])
   # To tell if the user typed close before before quit
   closes = 0
   # type open then name of server
