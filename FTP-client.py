@@ -76,7 +76,12 @@ def password(password, command_sock):
 def list_out(command_sock):
   # ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
-  new_data_socket(command_sock)
+  # read data here
+  stuff = new_data_socket(command_sock)
+  print(stuff)
+  ls_check = ftp_command(command_sock, 'LIST')
+
+  close(command_sock)
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
@@ -84,13 +89,17 @@ def cd(command_sock, directory):
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
-  get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  # get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  new_data_socket(command_sock)
   # TODO: account for secondary response message
 
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
-  put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
+  # put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
+  new_data_socket(command_sock)
+  # fw = open("somefile", "wb")
+  # fw.write(buff_w)
   # TODO: account for secondary response message
 
 # terminate the current FTP session, but keep your program running User: close Server: QUIT
@@ -112,7 +121,6 @@ def new_data_socket(old_command_sock):
   x = ran_port//256
   y = ran_port % 256
   port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
-  # pasv_comm = ftp_command(command_sock, "Pasv")
   # Use the "receptionist" to accept incoming connections
   data_receptioninst = socket(AF_INET, SOCK_STREAM)
   data_receptioninst.bind(("0.0.0.0", ran_port))
@@ -120,7 +128,10 @@ def new_data_socket(old_command_sock):
 
   # Use the "data_socket" to perform the actual byte transfer
   data_socket = data_receptioninst.accept()
-  return data_socket
+  # nbytes = old_command_sock.recv_into(buff)
+  # # buff = bytearray(nbytes)
+  # print(f"{nbytes} bytes: {buff.decode()}")
+  return data_receptioninst
 
 
 if __name__ == '__main__':
