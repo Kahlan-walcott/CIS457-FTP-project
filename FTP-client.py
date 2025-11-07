@@ -1,6 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
-import sys
+import sys, random 
 
 # FTP_SERVER = 'test.rebex.net'
 
@@ -64,7 +64,7 @@ def user(username, command_sock):
 def password(password, command_sock):
   pass_check = ftp_command(command_sock, 'PASS ' + password)
   # loop in case of wrong username or password (status code 530)
-  if pass_check == 530:
+  if pass_check >= 530:
     print("Invalid username or password")
     username2 = input("Enter username > ")
     user(username2, command_sock)
@@ -75,6 +75,8 @@ def password(password, command_sock):
 def list_out(command_sock):
   ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
+  # if ls_check == 125 or ls_check == 150:
+  # if ls_check == 226 or ls_check == 250:
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
@@ -84,12 +86,17 @@ def cd(command_sock, directory):
 def get(command_sock, file_path_name):
   get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
   # TODO: account for secondary response message
+  # if get_check == 125 or get_check == 150:
+  # if ls_check == 226 or ls_check == 250:
 
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
   put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
   # TODO: account for secondary response message
+  # if put_check == 125 or put_check == 150:
+  # if ls_check == 226 or ls_check == 250:
+
 
 # terminate the current FTP session, but keep your program running User: close Server: QUIT
 def close(command_sock):
@@ -104,13 +111,13 @@ def quit(command_sock):
 def new_data_socket(old_command_sock):
   my_ip, my_port = old_command_sock.getsockname()
   my_ip = my_ip.replace('.', ',')
-  # get values for my_port = x * 256 + y
   # generate random # 1024 - 65535
-  ran_port =
+  ran_port = random.randint(1024,65535)
+  # get values for ran_port = x * 256 + y
   x = ran_port//256
   y = ran_port % 256
   port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
-  # pasv_comm = ftp_command(command_sock, "Pasv")
+  
   # Use the "receptionist" to accept incoming connections
   data_receptioninst = socket(AF_INET, SOCK_STREAM)
   data_receptioninst.bind(("0.0.0.0", ran_port))
@@ -169,3 +176,7 @@ if __name__ == '__main__':
 
     if inputs[0] == 'open':
       command_sock = open(first[1])
+
+# ftp.dlptest.com	
+# username dlpuser
+#password rNrKYTX9g7z3RgJRmxWuGHbeu
