@@ -81,7 +81,8 @@ def list_out(command_sock):
   ls_check = ftp_command(command_sock, 'LIST')
 
   close(command_sock)
-  # if ls_check == 125 or ls_check == 150:
+  if ls_check == 125 or ls_check == 150:
+    print(f"{stuff}, {ls_check}")
   # if ls_check == 226 or ls_check == 250:
   new_data_socket(command_sock)
 
