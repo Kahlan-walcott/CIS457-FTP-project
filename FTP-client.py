@@ -11,7 +11,7 @@ def ftp_command(s, cmd):
   buff = bytearray(512)
   s.sendall((cmd + "\r\n").encode())
   # TODO: Fix this part to parse multiline responses
-
+  
   # Loop until end of lines
   while True:
     print('Start loop for multiline output')
@@ -73,10 +73,11 @@ def password(password, command_sock):
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
-  ls_check = ftp_command(command_sock, 'LIST')
+  # ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
   # if ls_check == 125 or ls_check == 150:
   # if ls_check == 226 or ls_check == 250:
+  new_data_socket(command_sock)
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
