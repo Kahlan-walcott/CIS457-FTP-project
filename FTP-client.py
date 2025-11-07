@@ -1,6 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import sys
+import random
 
 # FTP_SERVER = 'test.rebex.net'
 
@@ -11,7 +12,7 @@ def ftp_command(s, cmd):
   buff = bytearray(512)
   s.sendall((cmd + "\r\n").encode())
   # TODO: Fix this part to parse multiline responses
-
+  
   # Loop until end of lines
   while True:
     print('Start loop for multiline output')
@@ -73,9 +74,9 @@ def password(password, command_sock):
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
-  ls_check = ftp_command(command_sock, 'LIST')
+  # ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
-
+  new_data_socket(command_sock)
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
@@ -107,7 +108,7 @@ def new_data_socket(old_command_sock):
   my_ip = my_ip.replace('.', ',')
   # get values for my_port = x * 256 + y
   # generate random # 1024 - 65535
-  ran_port =
+  ran_port = random.randint(1024, 65535)
   x = ran_port//256
   y = ran_port % 256
   port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
