@@ -3,6 +3,7 @@ from threading import Thread
 import sys, random 
 
 
+'''Sends out FTP commands, parses for multilines of code'''
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
   buff = bytearray(512)
@@ -32,7 +33,7 @@ def ftp_command(s, cmd):
       continue
 
 
-# open TCP socket and connect to server
+''' open TCP socket and connect to server '''
 def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
@@ -53,13 +54,15 @@ def open(server):
   user(str(username), command_sock)
   return command_sock
 
-# enter user id for server
+''' enter user id for server '''
 def user(username, command_sock):
   user_check = ftp_command(command_sock, 'USER ' + username)
   if user_check == 331:
     pas = input("Enter password > ")
     password(str(pas), command_sock)
 
+
+''' enter password for server '''
 # enter password for server
 def password(password, command_sock):
   pass_check = ftp_command(command_sock, 'PASS ' + password)
@@ -71,7 +74,7 @@ def password(password, command_sock):
     if username2 == 'close':
       close(command_sock)
 
-# Show list of remote files user: dir or ls server: LIST
+''' Show list of remote files user: dir or ls server: LIST '''
 def list_out(command_sock):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE A')
@@ -82,8 +85,16 @@ def list_out(command_sock):
   # TODO: account for secondary response message
   # if ls_check == 125 or ls_check == 150:
   #     ftp_command(command_sock, 'NOOP')
+  # read bytes
+  #read_data(new_sock)
 
-# Change current directory on the remote host User: cd Server: CWD
+  # threading attempt
+  threading([ftp_command, command_sock, 'LIST'], [read_data, [new_sock]])
+  # TODO: account for secondary response message
+  # if ls_check == 125 or ls_check == 150:
+  #     ftp_command(command_sock, 'NOOP')
+
+''' Change current directory on the remote host User: cd Server: CWD '''
 def cd(command_sock, directory):
   cd_check = ftp_command(command_sock, 'CWD ' + str(directory))
   # error message for when directory isn't there or available to enter
@@ -94,7 +105,7 @@ def cd(command_sock, directory):
     if new_cd == 'close':
       close(command_sock)
 
-# Download file xxxxx from the remote host User: get Server: RETR
+''' Download file xxxxx from the remote host User: get Server: RETR '''
 def get(command_sock, file_path_name):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE I')
@@ -119,6 +130,8 @@ def get(command_sock, file_path_name):
   # if get_check == 125 or get_check == 150:
   #   ftp_command(command_sock, 'NOOP')
 
+
+''' Upload file yyyyy to the remote host User: put Server: STOR '''
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
   new_sock = new_data_socket(command_sock)
@@ -137,16 +150,16 @@ def put(command_sock, file_path_name):
   #   ftp_command(command_sock, 'NOOP')
 
 
-# terminate the current FTP session, but keep your program running User: close Server: QUIT
+''' terminate the current FTP session, but keep your program running User: close Server: QUIT '''
 def close(command_sock):
   ftp_command(command_sock, 'QUIT')
 
-# terminate both FTP session and program User: quit Server: QUIT
+''' terminate both FTP session and program User: quit Server: QUIT '''
 def quit(command_sock):
   ftp_command(command_sock, 'QUIT')
   sys.exit(0)
 
-# open new data socket
+''' open new data socket '''
 def new_data_socket(old_command_sock):
   my_ip, my_port = old_command_sock.getsockname()
   my_ip = my_ip.replace('.', ',')
@@ -168,12 +181,14 @@ def new_data_socket(old_command_sock):
   data_socket = data_socket[0]
   return data_socket
 
+''' prints incoming data'''
 def read_data(data_sock):
+  # data_sock = data_sock[0]
   # max 512 bytes per buff
   buff = bytearray(512)
   # loop until no more bytes
   nbytes = 512
-  while nbytes == 512:
+  while nbytes >= 512:
     nbytes = data_sock.recv_into(buff)
     print(f"{nbytes} bytes: \n{buff.decode()}")
   
