@@ -75,12 +75,13 @@ def password(password, command_sock):
 def list_out(command_sock):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE A')
-  ls_check = ftp_command(command_sock, 'LIST')
-  # read bytes
-  read_data(new_sock)
+  # ls_check = ftp_command(command_sock, 'LIST')
+  # # read bytes
+  # read_data(new_sock)
+  threading([ftp_command, command_sock, 'LIST'], [read_data, [new_sock]])
   # TODO: account for secondary response message
-  if ls_check == 125 or ls_check == 150:
-      ftp_command(command_sock, 'NOOP')
+  # if ls_check == 125 or ls_check == 150:
+  #     ftp_command(command_sock, 'NOOP')
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
@@ -97,34 +98,43 @@ def cd(command_sock, directory):
 def get(command_sock, file_path_name):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE I')
-  get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  try:
+  # get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  # with open(file_path_name, "rb") as f:
+    threading([ftp_command, command_sock, 'RETR'], [read_data, [new_sock]])
+
+      
+  except Exception as e:
+    print(f"exeption {e}")
+    
   # downloading non-existent remote file 
-  if get_check >= 550:
-    print("File not found.")
-    file_in = input("Enter command > ")
-    get(command_sock, file_in)
-    if file_in == 'close':
-      close(command_sock)
-  read_data(new_sock)
-  # account for secondary response message
-  if get_check == 125 or get_check == 150:
-    ftp_command(command_sock, 'NOOP')
+  # if get_check >= 550:
+  #   print("File not found.")
+  #   file_in = input("Enter command > ")
+  #   get(command_sock, file_in)
+  #   if file_in == 'close':
+  #     close(command_sock)
+  # read_data(new_sock)
+  # # account for secondary response message
+  # if get_check == 125 or get_check == 150:
+  #   ftp_command(command_sock, 'NOOP')
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE I')
-  put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
-  if put_check >= 450: 
-    print("The file you are trying to upload is nonexistent.")
-    file = input("Enter command > ")
-    put(command_sock, file)
-    if file == 'close':
-      close(command_sock)
-  read_data(new_sock)
-  # account for secondary response message
-  if put_check == 125 or put_check == 150:
-    ftp_command(command_sock, 'NOOP')
+  # put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
+  threading([ftp_command, command_sock, 'STOR'], [read_data, [new_sock]])
+  # if put_check >= 450: 
+  #   print("The file you are trying to upload is nonexistent.")
+  #   file = input("Enter command > ")
+  #   put(command_sock, file)
+  #   if file == 'close':
+  #     close(command_sock)
+  # read_data(new_sock)
+  # # account for secondary response message
+  # if put_check == 125 or put_check == 150:
+  #   ftp_command(command_sock, 'NOOP')
 
 
 # terminate the current FTP session, but keep your program running User: close Server: QUIT
@@ -171,16 +181,21 @@ def read_data(data_sock):
   data_sock.close()
 
 
-def threading():
-  # Replace the above sequential calls with
-  one = Thread(target=my_first_work, args=("NVDA", 20.5,))
+def threading(funct1, funct2):
+  # funct1 is ftp_command(command_sock, 'LIST')
+  # funct2 is read_data(new_sock)
+  print(f"FUNCT1: {funct1} \n")
+  print(f"FUNCT2: {funct2} \n")
+  one = Thread(target=funct1[0], args=(funct1[1], funct1[2]))
   one.start()
-  two = Thread(target=my_second_work, args=(True, 30, my_account,))
+  two = Thread(target=funct2[0], args=(funct2[1]))
   two.start()
 
   one.join()
   two.join()
-  print("Both work done")
+  print('ONE: FTP command', one)
+  print('TWO: read data', two)
+  #return one
 
 
 if __name__ == '__main__':
