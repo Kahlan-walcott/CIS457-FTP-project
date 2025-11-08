@@ -107,6 +107,12 @@ def put(command_sock, file_path_name):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE I')
   put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
+  if put_check >= 450: 
+    print("The file you are trying to upload is nonexistent.")
+    file = input("Enter command > ")
+    put(command_sock, file)
+    if file == 'close':
+      close(command_sock)
   read_data(new_sock)
   # TODO: account for secondary response message
   if put_check == 125 or put_check == 150:
