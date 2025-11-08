@@ -2,9 +2,6 @@ from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import sys, random 
 
-# FTP_SERVER = 'test.rebex.net'
-
-# buffer = bytearray(512)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -17,7 +14,6 @@ def ftp_command(s, cmd):
     print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
-    # buff = bytearray(nbytes)
     print(f"{nbytes} bytes: {buff.decode()}")
     # Test if line starts with 3 digit code
     try:
@@ -35,8 +31,6 @@ def ftp_command(s, cmd):
       print('CONTINUE LOOP')
       continue
 
-# ftp_command(command_sock, "USER demo")
-# ftp_command(command_sock, "PASS password")
 
 # open TCP socket and connect to server
 def open(server):
@@ -74,26 +68,26 @@ def password(password, command_sock):
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE A')
+  ls_check = ftp_command(command_sock, 'LIST')
+  # read bytes
+  read_data(new_sock)
   # TODO: account for secondary response message
   # if ls_check == 125 or ls_check == 150:
   # if ls_check == 226 or ls_check == 250:
-  new_sock = new_data_socket(command_sock)
-  ftp_command(command_sock, 'TYPE A')
-  ftp_command(command_sock, 'LIST')
-  # read bytes
-  read_data(new_sock)
-  # buff = bytearray(512)
-  # nbytes = new_sock.recv_into(buff)
-  # print(f"{nbytes} bytes: {buff.decode()}")
-  # new_sock.close()
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
   ftp_command(command_sock, 'CWD ' + str(directory))
+  # TODO: error message
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE I')
   get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  read_data(new_sock)
   # TODO: account for secondary response message
   # if get_check == 125 or get_check == 150:
   # if ls_check == 226 or ls_check == 250:
@@ -101,7 +95,10 @@ def get(command_sock, file_path_name):
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE I')
   put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
+  read_data(new_sock)
   # TODO: account for secondary response message
   # if put_check == 125 or put_check == 150:
   # if ls_check == 226 or ls_check == 250:
@@ -134,6 +131,7 @@ def new_data_socket(old_command_sock):
 
   # Use the "data_socket" to perform the actual byte transfer
   data_socket = data_receptioninst.accept()
+  # make data_socket type socket.socket()
   data_socket = data_socket[0]
   return data_socket
 
