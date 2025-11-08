@@ -37,6 +37,8 @@ def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
+  # TODO: Error handling: unknown FTP server
+
   print(command_sock, 'Type', type(command_sock))
   # my_ip, my_port = command_sock.getsockname()
   # print('MY_IP AND MY_PORT', my_ip, my_port)
@@ -148,7 +150,16 @@ def read_data(data_sock):
   data_sock.close()
 
 
-# def threading():
+def threading():
+  # Replace the above sequential calls with
+  one = Thread(target=my_first_work, args=("NVDA", 20.5,))
+  one.start()
+  two = Thread(target=my_second_work, args=(True, 30, my_account,))
+  two.start()
+
+  one.join()
+  two.join()
+  print("Both work done")
 
 
 if __name__ == '__main__':
