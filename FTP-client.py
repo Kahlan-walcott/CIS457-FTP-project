@@ -43,6 +43,7 @@ def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
+  print(command_sock, 'Type', type(command_sock))
   # my_ip, my_port = command_sock.getsockname()
   # print('MY_IP AND MY_PORT', my_ip, my_port)
   len = command_sock.recv_into(buffer)
@@ -73,11 +74,18 @@ def password(password, command_sock):
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
-  # ls_check = ftp_command(command_sock, 'LIST')
   # TODO: account for secondary response message
   # if ls_check == 125 or ls_check == 150:
   # if ls_check == 226 or ls_check == 250:
-  new_data_socket(command_sock)
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE A')
+  ftp_command(command_sock, 'LIST')
+  # read bytes
+  read_data(new_sock)
+  # buff = bytearray(512)
+  # nbytes = new_sock.recv_into(buff)
+  # print(f"{nbytes} bytes: {buff.decode()}")
+  # new_sock.close()
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
@@ -117,7 +125,7 @@ def new_data_socket(old_command_sock):
   # get values for ran_port = x * 256 + y
   x = ran_port//256
   y = ran_port % 256
-  port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
+  ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
   
   # Use the "receptionist" to accept incoming connections
   data_receptioninst = socket(AF_INET, SOCK_STREAM)
@@ -126,7 +134,23 @@ def new_data_socket(old_command_sock):
 
   # Use the "data_socket" to perform the actual byte transfer
   data_socket = data_receptioninst.accept()
+  data_socket = data_socket[0]
   return data_socket
+
+def read_data(data_sock):
+  # max 512 bytes per buff
+  buff = bytearray(512)
+  # loop until no more bytes
+  nbytes = 512
+  while nbytes == 512:
+    nbytes = data_sock.recv_into(buff)
+    print(f"{nbytes} bytes: \n{buff.decode()}")
+  
+  # close socket when done
+  data_sock.close()
+
+
+# def threading():
 
 
 if __name__ == '__main__':
