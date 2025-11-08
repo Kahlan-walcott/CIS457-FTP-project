@@ -89,6 +89,13 @@ def get(command_sock, file_path_name):
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE I')
   get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  # downloading non-existent remote file 
+  if get_check >= 550:
+    print("File not found.")
+    file_in = input("Enter command > ")
+    get(command_sock, file_in)
+    if file_in == 'close':
+      close(command_sock)
   read_data(new_sock)
   # TODO: account for secondary response message
   if get_check == 125 or get_check == 150:
