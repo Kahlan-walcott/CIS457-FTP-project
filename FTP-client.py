@@ -36,9 +36,14 @@ def ftp_command(s, cmd):
 def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
-  command_sock.connect((server, 21))
+  try:
+    command_sock.connect((server, 21))
   # TODO: Error handling: unknown FTP server
-
+  except:
+    print("Unknown socket.")
+    new_connect = str(input("Open connection -> "))
+    new_connect = new_connect.split(' ')
+    open(new_connect[1])
   print(command_sock, 'Type', type(command_sock))
   # my_ip, my_port = command_sock.getsockname()
   # print('MY_IP AND MY_PORT', my_ip, my_port)
@@ -81,7 +86,7 @@ def list_out(command_sock):
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
-  ftp_command(command_sock, 'CWD ' + str(directory))
+  cd_check = ftp_command(command_sock, 'CWD ' + str(directory))
   # TODO: error message
 
 # Download file xxxxx from the remote host User: get Server: RETR
