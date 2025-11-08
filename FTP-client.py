@@ -2,9 +2,6 @@ from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import sys, random 
 
-# FTP_SERVER = 'test.rebex.net'
-
-# buffer = bytearray(512)
 
 def ftp_command(s, cmd):
   print(f"Sending command {cmd}")
@@ -17,7 +14,6 @@ def ftp_command(s, cmd):
     print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
-    # buff = bytearray(nbytes)
     print(f"{nbytes} bytes: {buff.decode()}")
     # Test if line starts with 3 digit code
     try:
@@ -35,14 +31,13 @@ def ftp_command(s, cmd):
       print('CONTINUE LOOP')
       continue
 
-# ftp_command(command_sock, "USER demo")
-# ftp_command(command_sock, "PASS password")
 
 # open TCP socket and connect to server
 def open(server):
   buffer = bytearray(512)
   command_sock = socket(AF_INET, SOCK_STREAM)
   command_sock.connect((server, 21))
+  print(command_sock, 'Type', type(command_sock))
   # my_ip, my_port = command_sock.getsockname()
   # print('MY_IP AND MY_PORT', my_ip, my_port)
   len = command_sock.recv_into(buffer)
@@ -73,7 +68,11 @@ def password(password, command_sock):
 
 # Show list of remote files user: dir or ls server: LIST
 def list_out(command_sock):
-  # ls_check = ftp_command(command_sock, 'LIST')
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE A')
+  ls_check = ftp_command(command_sock, 'LIST')
+  # read bytes
+  read_data(new_sock)
   # TODO: account for secondary response message
   # read data here
   stuff = new_data_socket(command_sock)
@@ -85,16 +84,18 @@ def list_out(command_sock):
   if ls_check == 125 or ls_check == 150:
     print(f"{stuff}, {ls_check}")
   # if ls_check == 226 or ls_check == 250:
-  new_data_socket(command_sock)
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
   ftp_command(command_sock, 'CWD ' + str(directory))
+  # TODO: error message
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
-  # get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
-  new_data_socket(command_sock)
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE I')
+  get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
+  read_data(new_sock)
   # TODO: account for secondary response message
   # if get_check == 125 or get_check == 150:
   # if ls_check == 226 or ls_check == 250:
@@ -102,10 +103,10 @@ def get(command_sock, file_path_name):
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
-  # put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
-  new_data_socket(command_sock)
-  # fw = open("somefile", "wb")
-  # fw.write(buff_w)
+  new_sock = new_data_socket(command_sock)
+  ftp_command(command_sock, 'TYPE I')
+  put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
+  read_data(new_sock)
   # TODO: account for secondary response message
   # if put_check == 125 or put_check == 150:
   # if ls_check == 226 or ls_check == 250:
@@ -129,7 +130,7 @@ def new_data_socket(old_command_sock):
   # get values for ran_port = x * 256 + y
   x = ran_port//256
   y = ran_port % 256
-  port_comm = ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
+  ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
   
   # Use the "receptionist" to accept incoming connections
   data_receptioninst = socket(AF_INET, SOCK_STREAM)
@@ -138,10 +139,24 @@ def new_data_socket(old_command_sock):
 
   # Use the "data_socket" to perform the actual byte transfer
   data_socket = data_receptioninst.accept()
-  # nbytes = old_command_sock.recv_into(buff)
-  # # buff = bytearray(nbytes)
-  # print(f"{nbytes} bytes: {buff.decode()}")
-  return data_receptioninst
+  # make data_socket type socket.socket()
+  data_socket = data_socket[0]
+  return data_socket
+
+def read_data(data_sock):
+  # max 512 bytes per buff
+  buff = bytearray(512)
+  # loop until no more bytes
+  nbytes = 512
+  while nbytes == 512:
+    nbytes = data_sock.recv_into(buff)
+    print(f"{nbytes} bytes: \n{buff.decode()}")
+  
+  # close socket when done
+  data_sock.close()
+
+
+# def threading():
 
 
 if __name__ == '__main__':
