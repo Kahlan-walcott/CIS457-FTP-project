@@ -74,8 +74,8 @@ def list_out(command_sock):
   # read bytes
   read_data(new_sock)
   # TODO: account for secondary response message
-  # if ls_check == 125 or ls_check == 150:
-  # if ls_check == 226 or ls_check == 250:
+  if ls_check == 125 or ls_check == 150:
+      ftp_command(command_sock, 'NOOP')
 
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
@@ -89,8 +89,8 @@ def get(command_sock, file_path_name):
   get_check = ftp_command(command_sock, 'RETR ' + file_path_name)
   read_data(new_sock)
   # TODO: account for secondary response message
-  # if get_check == 125 or get_check == 150:
-  # if ls_check == 226 or ls_check == 250:
+  if get_check == 125 or get_check == 150:
+    ftp_command(command_sock, 'NOOP')
 
 
 # Upload file yyyyy to the remote host User: put Server: STOR
@@ -100,8 +100,8 @@ def put(command_sock, file_path_name):
   put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
   read_data(new_sock)
   # TODO: account for secondary response message
-  # if put_check == 125 or put_check == 150:
-  # if ls_check == 226 or ls_check == 250:
+  if put_check == 125 or put_check == 150:
+    ftp_command(command_sock, 'NOOP')
 
 
 # terminate the current FTP session, but keep your program running User: close Server: QUIT
@@ -200,6 +200,7 @@ if __name__ == '__main__':
     if inputs[0] == 'open':
       command_sock = open(first[1])
 
+# testing putting files
 # ftp.dlptest.com	
 # username dlpuser
-#password rNrKYTX9g7z3RgJRmxWuGHbeu
+# password rNrKYTX9g7z3RgJRmxWuGHbeu
