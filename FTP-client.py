@@ -65,7 +65,7 @@ def password(password, command_sock):
   pass_check = ftp_command(command_sock, 'PASS ' + password)
   # loop in case of wrong username or password (status code 530)
   if pass_check >= 530:
-    print("Invalid username or password")
+    print("Invalid username or password.")
     username2 = input("Enter username > ")
     user(username2, command_sock)
     if username2 == 'close':
@@ -78,9 +78,10 @@ def list_out(command_sock):
   # read data here
   stuff = new_data_socket(command_sock)
   print(stuff)
-  ls_check = ftp_command(command_sock, 'LIST')
+  ls_check = ftp_command(command_sock, 'NLST')
 
-  close(command_sock)
+  # I couldn't get the command back so this is commented out
+  # close(command_sock)
   if ls_check == 125 or ls_check == 150:
     print(f"{stuff}, {ls_check}")
   # if ls_check == 226 or ls_check == 250:
@@ -178,6 +179,7 @@ if __name__ == '__main__':
       get(command_sock, inputs[1])
 
     if inputs[0] == "quit":
+      command_sock.close()
       if closes == 0:
         quit(command_sock)
       print("Program closing.")
@@ -185,6 +187,7 @@ if __name__ == '__main__':
 
     if inputs[0] == "close":
       closes = 1
+      command_sock.close()
       close(command_sock)
       # server = input("Enter server name > ")
       # command_sock = open(server)
