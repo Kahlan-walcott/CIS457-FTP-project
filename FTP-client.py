@@ -38,7 +38,7 @@ def open(server):
   command_sock = socket(AF_INET, SOCK_STREAM)
   try:
     command_sock.connect((server, 21))
-  # TODO: Error handling: unknown FTP server
+  # Error handling: unknown FTP server
   except:
     print("Unknown socket.")
     new_connect = str(input("Open connection -> "))
@@ -46,10 +46,9 @@ def open(server):
     open(new_connect[1])
   print(command_sock, 'Type', type(command_sock))
   # my_ip, my_port = command_sock.getsockname()
-  # print('MY_IP AND MY_PORT', my_ip, my_port)
   len = command_sock.recv_into(buffer)
   print(f"Server response {len} bytes: {buffer.decode()}")
-  # TODO: prompt user input for username
+  #  prompt user input for username
   username = input("Enter username > ")
   user(str(username), command_sock)
   return command_sock
@@ -60,7 +59,6 @@ def user(username, command_sock):
   if user_check == 331:
     pas = input("Enter password > ")
     password(str(pas), command_sock)
-
 
 # enter password for server
 def password(password, command_sock):
@@ -87,7 +85,13 @@ def list_out(command_sock):
 # Change current directory on the remote host User: cd Server: CWD
 def cd(command_sock, directory):
   cd_check = ftp_command(command_sock, 'CWD ' + str(directory))
-  # TODO: error message
+  # error message for when directory isn't there or available to enter
+  if cd_check >= 550:
+    print("That directory is not available.")
+    new_cd = input("Enter command > ")
+    get(command_sock, new_cd)
+    if new_cd == 'close':
+      close(command_sock)
 
 # Download file xxxxx from the remote host User: get Server: RETR
 def get(command_sock, file_path_name):
@@ -102,10 +106,9 @@ def get(command_sock, file_path_name):
     if file_in == 'close':
       close(command_sock)
   read_data(new_sock)
-  # TODO: account for secondary response message
+  # account for secondary response message
   if get_check == 125 or get_check == 150:
     ftp_command(command_sock, 'NOOP')
-
 
 # Upload file yyyyy to the remote host User: put Server: STOR
 def put(command_sock, file_path_name):
@@ -119,7 +122,7 @@ def put(command_sock, file_path_name):
     if file == 'close':
       close(command_sock)
   read_data(new_sock)
-  # TODO: account for secondary response message
+  # account for secondary response message
   if put_check == 125 or put_check == 150:
     ftp_command(command_sock, 'NOOP')
 
@@ -145,12 +148,12 @@ def new_data_socket(old_command_sock):
   ftp_command(command_sock, f"PORT {my_ip},{x},{y}")
   
   # Use the "receptionist" to accept incoming connections
-  data_receptioninst = socket(AF_INET, SOCK_STREAM)
-  data_receptioninst.bind(("0.0.0.0", ran_port))
-  data_receptioninst.listen(1)         # max number of pending request
+  data_receptionist = socket(AF_INET, SOCK_STREAM)
+  data_receptionist.bind(("0.0.0.0", ran_port))
+  data_receptionist.listen(1)         # max number of pending request
 
   # Use the "data_socket" to perform the actual byte transfer
-  data_socket = data_receptioninst.accept()
+  data_socket = data_receptionist.accept()
   # make data_socket type socket.socket()
   data_socket = data_socket[0]
   return data_socket
