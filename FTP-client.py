@@ -90,7 +90,7 @@ def list_out(command_sock):
 
   elif ls_check >= 500:
     print('Command not recognized')
-  elif ls_check >= 400:
+  elif ls_check >= 400 and ls_check < 500:
     print('Connection error')
   
   
@@ -101,10 +101,7 @@ def cd(command_sock, directory):
   # error message for when directory isn't there or available to enter
   if cd_check >= 550:
     print("That directory is not available.")
-    new_cd = input("Enter command > ")
-    get(command_sock, new_cd)
-    if new_cd == 'close':
-      close(command_sock)
+    
 
 ''' Download file xxxxx from the remote host User: get Server: RETR '''
 def get(command_sock, file_path_name):
@@ -128,21 +125,32 @@ def get(command_sock, file_path_name):
 
 ''' Upload file yyyyy to the remote host User: put Server: STOR '''
 def put(command_sock, file_path_name):
+  # Open file to translate into a binary file (new_file)
+  rfile = open(file_path_name, "rb")  # Open for reading as a binary file
+  new_file = ('BIN' + str(file_path_name))
+  wbin = open(new_file, "wb")  # Open for writing as a binary file
+  
+  # Read contents of old file into binary file
+  buff = rfile.read()     # read all bytes from rfile into buf
+  wbin.write(buff)           # write from buff to new_file
+  print('NEW_FILE', new_file)
+  print('FW', wbin)
+  # close files
+  rfile.close()
+  wbin.close()
+
   # Create new socket
   new_sock = new_data_socket(command_sock)
   ftp_command(command_sock, 'TYPE I')
-  put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
- # threading read_data and secondary response message
+  put_check = ftp_command(command_sock, 'STOR ' + new_file)
+ # secondary response message
   if put_check == 125 or put_check == 150:
-    threading([read_data, [new_sock, None]], [secondary_response, [command_sock]])
+    secondary_response(command_sock)
 
   # Error checking
   if put_check >= 450: 
     print("The file you are trying to upload is nonexistent.")
-    file = input("Enter command > ")
-    put(command_sock, file)
-    if file == 'close':
-      close(command_sock)
+    
 
 
 ''' terminate the current FTP session, but keep your program running User: close Server: QUIT '''
@@ -151,8 +159,11 @@ def close(command_sock):
 
 ''' terminate both FTP session and program User: quit Server: QUIT '''
 def quit(command_sock):
-  ftp_command(command_sock, 'QUIT')
-  sys.exit(0)
+  try:
+    ftp_command(command_sock, 'QUIT')
+    sys.exit(0)
+  except:
+    sys.exit(0)
 
 ''' open new data socket '''
 def new_data_socket(old_command_sock):
@@ -178,27 +189,28 @@ def new_data_socket(old_command_sock):
 
 ''' prints incoming data'''
 def read_data(data_sock, path=None):
-  # data_sock = data_sock[0]
   # max 512 bytes per buff
   buff = bytearray(512)
-  # if path != None:
-  #   fw = open("get_file", "wb")  # Open for writing as a binary file
-  #   nbytes = 512
-  #   while nbytes >= 512:
-  #     nbytes = data_sock.recv_into(buff)
-  #     print(f"{nbytes} bytes: \n{buff.decode()}")
-  #     fw.write(buff.decode)
-
-  #   print('FW')
-  #   print(fw)
-  #   fw.close()
-
-  # else:
-    # loop until no more bytes
+  if path != None:
+    fw = open(str(path), "wb")  # Open for writing as a binary file
   nbytes = 512
   while nbytes >= 512:
     nbytes = data_sock.recv_into(buff)
     print(f"{nbytes} bytes: \n{buff.decode()}")
+    if path != None:
+      fw.write(buff)
+
+  if path != None:
+    print('FW')
+    print(fw)
+    fw.close()
+
+  # else:
+    # loop until no more bytes
+  # nbytes = 512
+  # while nbytes >= 512:
+  #   nbytes = data_sock.recv_into(buff)
+  #   print(f"{nbytes} bytes: \n{buff.decode()}")
   
   # close socket when done
   data_sock.close()
