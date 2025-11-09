@@ -36,18 +36,19 @@ def ftp_command(s, cmd):
 ''' open TCP socket and connect to server '''
 def open(server):
   buffer = bytearray(512)
-  command_sock = socket(AF_INET, SOCK_STREAM)
-  command_sock.connect((server, 21))
-  # try:
-  #   command_sock = socket(AF_INET, SOCK_STREAM)
-  #   command_sock.connect((server, 21))
-  # # Error handling: unknown FTP server
-  # except:
-  #   print("Unknown server.")
-  #   new_connect = str(input("Open connection -> "))
-  #   new_connect = new_connect.split(' ')
-  #   print(new_connect)
-  #   open(new_connect[1])
+  # command_sock = socket(AF_INET, SOCK_STREAM)
+  # command_sock.connect((server, 21))
+  try:
+    command_sock = socket(AF_INET, SOCK_STREAM)
+    command_sock.connect((server, 21))
+  # Error handling: unknown FTP server
+  except:
+    command_sock.close()
+    print("Unknown server.")
+    new_connect = str(input("Open connection -> "))
+    new_connect = new_connect.split(' ')
+    print(new_connect)
+    open(new_connect[1])
   
   # print(command_sock, 'Type', type(command_sock))
   len = command_sock.recv_into(buffer)
@@ -88,10 +89,10 @@ def list_out(command_sock):
   if ls_check == 125 or ls_check == 150:
     threading([ftp_command, command_sock, 'NOOP'], [read_data, [new_sock]])
 
-  elif ls_check >= 400:
-    print('Connection error')
   elif ls_check >= 500:
     print('Command not recognized')
+  elif ls_check >= 400:
+    print('Connection error')
   
   
 
