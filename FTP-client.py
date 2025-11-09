@@ -46,7 +46,7 @@ def open_server(server):
     new_connect = str(input("Open connection -> "))
     new_connect = new_connect.split(' ')
     print(new_connect)
-    return open(new_connect[1])
+    return open_server(new_connect[1])
   
   # print(command_sock, 'Type', type(command_sock))
   len = command_sock.recv_into(buffer)
