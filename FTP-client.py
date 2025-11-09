@@ -34,21 +34,20 @@ def ftp_command(s, cmd):
 
 
 ''' open TCP socket and connect to server '''
-def open(server):
+def open_server(server):
   buffer = bytearray(512)
-  # command_sock = socket(AF_INET, SOCK_STREAM)
-  # command_sock.connect((server, 21))
-  try:
-    command_sock = socket(AF_INET, SOCK_STREAM)
-    command_sock.connect((server, 21))
-  # Error handling: unknown FTP server
-  except:
-    command_sock.close()
-    print("Unknown server.")
-    new_connect = str(input("Open connection -> "))
-    new_connect = new_connect.split(' ')
-    print(new_connect)
-    open(new_connect[1])
+  command_sock = socket(AF_INET, SOCK_STREAM)
+  command_sock.connect((server, 21))
+  # try:
+  #   command_sock = socket(AF_INET, SOCK_STREAM)
+  #   command_sock.connect((server, 21))
+  # # Error handling: unknown FTP server
+  # except:
+  #   print("Unknown server.")
+  #   new_connect = str(input("Open connection -> "))
+  #   new_connect = new_connect.split(' ')
+  #   print(new_connect)
+  #   open(new_connect[1])
   
   # print(command_sock, 'Type', type(command_sock))
   len = command_sock.recv_into(buffer)
@@ -87,7 +86,7 @@ def list_out(command_sock):
 
   # threading read_data with secondary response message
   if ls_check == 125 or ls_check == 150:
-    threading([ftp_command, command_sock, 'NOOP'], [read_data, [new_sock]])
+    threading([read_data, [new_sock, None]], [secondary_response, [command_sock]])
 
   elif ls_check >= 500:
     print('Command not recognized')
@@ -116,7 +115,7 @@ def get(command_sock, file_path_name):
 
   # threading read_data and secondary response message
   if get_check == 125 or get_check == 150:
-    threading([ftp_command, command_sock, 'NOOP'], [read_data, [new_sock]])
+    threading([read_data, [new_sock, file_path_name]], [secondary_response, [command_sock]])
 
   # downloading non-existent remote file 
   if get_check >= 550:
@@ -135,7 +134,7 @@ def put(command_sock, file_path_name):
   put_check = ftp_command(command_sock, 'STOR ' + file_path_name)
  # threading read_data and secondary response message
   if put_check == 125 or put_check == 150:
-    threading([ftp_command, command_sock, 'NOOP'], [read_data, [new_sock]])
+    threading([read_data, [new_sock, None]], [secondary_response, [command_sock]])
 
   # Error checking
   if put_check >= 450: 
@@ -178,11 +177,24 @@ def new_data_socket(old_command_sock):
   return data_socket
 
 ''' prints incoming data'''
-def read_data(data_sock):
+def read_data(data_sock, path=None):
   # data_sock = data_sock[0]
   # max 512 bytes per buff
   buff = bytearray(512)
-  # loop until no more bytes
+  # if path != None:
+  #   fw = open("get_file", "wb")  # Open for writing as a binary file
+  #   nbytes = 512
+  #   while nbytes >= 512:
+  #     nbytes = data_sock.recv_into(buff)
+  #     print(f"{nbytes} bytes: \n{buff.decode()}")
+  #     fw.write(buff.decode)
+
+  #   print('FW')
+  #   print(fw)
+  #   fw.close()
+
+  # else:
+    # loop until no more bytes
   nbytes = 512
   while nbytes >= 512:
     nbytes = data_sock.recv_into(buff)
@@ -191,16 +203,39 @@ def read_data(data_sock):
   # close socket when done
   data_sock.close()
 
-  return 1
+
+''' Read output for secondary response message'''
+def secondary_response(command_sock):
+  buff = bytearray(512)
+  while True:
+    #print('Start loop for multiline output')
+    # print output and number or bytes
+    nbytes = command_sock.recv_into(buff)
+    print(f"{nbytes} bytes: {buff.decode()}")
+    # Test if line starts with 3 digit code
+    try:
+      three_digit_code = int(buff.decode()[0:3])
+      print('THREE DIGIT CODE', three_digit_code)
+      # if line starts with three digit code check for '-'
+      if buff.decode()[4] != '-':
+        # exit loop
+        # print('END LOOP')
+        return three_digit_code
+      else:
+        continue
+    # No 3 digit code, continue loop
+    except:
+      print('CONTINUE LOOP')
+      continue
 
 
 ''' Threading for LIST, RETR, STOR, and read_data'''
 def threading(funct1, funct2):
-  # funct1 is ftp_command(command_sock, ('LIST', 'RETR', 'STOR'))
-  # funct2 is read_data(new_sock)
+  # funct1 is read_data(new_sock)
+  # funct2 is seocndary_response(command_sock)
   # print(f"FUNCT1: {funct1} \n")
   # print(f"FUNCT2: {funct2} \n")
-  one = Thread(target=funct1[0], args=(funct1[1], funct1[2]))
+  one = Thread(target=funct1[0], args=(funct1[1]))
   one.start()
   two = Thread(target=funct2[0], args=(funct2[1]))
   two.start()
@@ -221,7 +256,7 @@ if __name__ == '__main__':
     print('Error - cannot run command')
     first = input('Open connection -> ')
     first = first.split(' ')
-  command_sock = open(first[1])
+  command_sock = open_server(first[1])
   # To tell if the user typed close before before quit
   closes = 0
   # type open then name of server
@@ -248,23 +283,12 @@ if __name__ == '__main__':
 
     if inputs[0] == "quit":
       quit(command_sock)
-      # command_sock.close()
-      # if closes == 0:
-      #   quit(command_sock)
-      # print("Program closing.")
-      # break
 
     if inputs[0] == "close":
       closes = 1
-      command_sock.close()
       close(command_sock)
-      # server = input("Enter server name > ")
-      # command_sock = open(server)
+     
 
     if inputs[0] == 'open':
-      command_sock = open(first[1])
+      command_sock = open_server(first[1])
 
-# testing putting files
-# ftp.dlptest.com	
-# username dlpuser
-# password rNrKYTX9g7z3RgJRmxWuGHbeu
