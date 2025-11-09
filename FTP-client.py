@@ -320,7 +320,7 @@ if __name__ == '__main__':
       closes = 1
       close(command_sock)
       server = input("Enter server name > ")
-      command_sock = open(server)
+      command_sock = open_server(server)
      
     if inputs[0] == 'open':
       command_sock = open_server(first[1])
