@@ -12,7 +12,7 @@ def ftp_command(s, cmd):
   
   # Loop until end of lines
   while True:
-    print('Start loop for multiline output')
+    # print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = s.recv_into(buff)
     print(f"{nbytes} bytes: {buff.decode()}")
@@ -23,13 +23,13 @@ def ftp_command(s, cmd):
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
-        print('END LOOP')
+        # print('END LOOP')
         return three_digit_code
       else:
         continue
     # No 3 digit code, continue loop
     except:
-      print('CONTINUE LOOP')
+      # print('CONTINUE LOOP')
       continue
 
 ''' open TCP socket and connect to server '''
@@ -184,7 +184,6 @@ def new_data_socket(old_command_sock):
 def secondary_response(command_sock):
   buff = bytearray(512)
   while True:
-    #print('Start loop for multiline output')
     # print output and number or bytes
     nbytes = command_sock.recv_into(buff)
     print(f"{nbytes} bytes: {buff.decode()}")
@@ -221,13 +220,6 @@ def read_data(data_sock, path=None):
     print('FW')
     print(fw)
     fw.close()
-
-  # else:
-    # loop until no more bytes
-  # nbytes = 512
-  # while nbytes >= 512:
-  #   nbytes = data_sock.recv_into(buff)
-  #   print(f"{nbytes} bytes: \n{buff.decode()}")
   
   # close socket when done
   data_sock.close()
@@ -248,7 +240,6 @@ def secondary_response(command_sock):
       # if line starts with three digit code check for '-'
       if buff.decode()[4] != '-':
         # exit loop
-        # print('END LOOP')
         return three_digit_code
       else:
         continue
@@ -309,18 +300,17 @@ if __name__ == '__main__':
       get(command_sock, inputs[1])
 
     if inputs[0] == "quit":
-      quit(command_sock)
-      command_sock.close()
       if closes == 0:
         quit(command_sock)
+      elif close == 1:
+        sys.exit(0)
       print("Program closing.")
       break
 
     if inputs[0] == "close":
       closes = 1
       close(command_sock)
-      server = input("Enter server name > ")
-      command_sock = open_server(server)
      
     if inputs[0] == 'open':
       command_sock = open_server(first[1])
+      closes = 0
